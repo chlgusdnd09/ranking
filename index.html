@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d20">
+  <title>CLIP CHAMPIONS — 클립 랭킹</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c0a16;
+      --panel: rgba(25, 21, 43, .88);
+      --panel-2: #1b1730;
+      --line: rgba(190, 174, 255, .13);
+      --text: #f5f2ff;
+      --muted: #a9a2c2;
+      --purple: #a78bfa;
+      --violet: #7c3aed;
+      --blue: #4f46e5;
+      --gold: #ffd166;
+      --silver: #d7dce8;
+      --bronze: #e49a68;
+      --danger: #ff6b85;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 50% -20%, rgba(108, 70, 214, .34), transparent 55%),
+        radial-gradient(circle at 95% 35%, rgba(48, 62, 165, .16), transparent 28%),
+        var(--bg);
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .shell { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 38px 0 56px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 34px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 900; letter-spacing: .16em; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(200, 181, 255, .28); border-radius: 12px; background: linear-gradient(145deg, #6d3bc5, #33327d); box-shadow: 0 8px 26px rgba(106, 65, 205, .25); font-size: 18px; }
+    .local-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .local-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #64e6ac; box-shadow: 0 0 10px #64e6ac; }
+    .hero { text-align: center; margin: 28px 0 30px; }
+    .eyebrow { color: #c1a8ff; font-weight: 800; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; }
+    h1 { margin: 10px 0 9px; font-size: clamp(36px, 7vw, 64px); line-height: 1; letter-spacing: -.055em; font-weight: 950; }
+    h1 span { color: #b89aff; text-shadow: 0 0 32px rgba(167, 139, 250, .4); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; max-width: 650px; margin: 0 auto 25px; }
+    .stat-card { display: flex; align-items: center; gap: 14px; padding: 17px 20px; border: 1px solid var(--line); border-radius: 17px; background: linear-gradient(145deg, rgba(33, 27, 57, .94), rgba(20, 18, 38, .92)); box-shadow: 0 12px 35px rgba(0, 0, 0, .13); }
+    .stat-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: rgba(150, 112, 255, .13); font-size: 20px; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { margin-top: 2px; font-size: 23px; font-weight: 900; letter-spacing: -.03em; }
+    .stat-value small { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(290px, .8fr); gap: 18px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 20px; background: var(--panel); box-shadow: 0 18px 50px rgba(0, 0, 0, .2); overflow: hidden; backdrop-filter: blur(12px); }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 19px 21px; border-bottom: 1px solid var(--line); }
+    .panel-title { margin: 0; font-size: 15px; font-weight: 850; letter-spacing: -.01em; }
+    .panel-kicker { color: var(--muted); font-size: 11px; }
+    .board-list { padding: 8px 12px 13px; }
+    .player-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto 34px; align-items: center; gap: 12px; min-height: 69px; margin: 6px 0; padding: 10px 12px; border: 1px solid transparent; border-radius: 14px; background: rgba(255,255,255,.025); transition: transform .18s ease, background .18s ease; }
+    .player-row:hover { transform: translateY(-1px); background: rgba(255,255,255,.055); }
+    .player-row.rank-1 { border-color: rgba(255, 209, 102, .36); background: linear-gradient(100deg, rgba(255, 209, 102, .12), rgba(255,255,255,.025) 70%); box-shadow: inset 3px 0 0 var(--gold); }
+    .player-row.rank-2 { border-color: rgba(215, 220, 232, .26); background: linear-gradient(100deg, rgba(215, 220, 232, .09), rgba(255,255,255,.025) 70%); box-shadow: inset 3px 0 0 var(--silver); }
+    .player-row.rank-3 { border-color: rgba(228, 154, 104, .28); background: linear-gradient(100deg, rgba(228, 154, 104, .10), rgba(255,255,255,.025) 70%); box-shadow: inset 3px 0 0 var(--bronze); }
+    .place { text-align: center; color: #aaa4c1; font-size: 13px; font-weight: 800; }
+    .medal { display: block; font-size: 21px; line-height: 1; }
+    .player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 750; }
+    .player-sub { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .score { text-align: right; white-space: nowrap; font-size: 19px; font-weight: 900; letter-spacing: -.04em; }
+    .score span { margin-left: 4px; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: 0; }
+    .delete-btn { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #8d87a7; cursor: pointer; font-size: 15px; }
+    .delete-btn:hover { border-color: rgba(255,107,133,.25); background: rgba(255,107,133,.1); color: var(--danger); }
+    .empty { padding: 44px 20px; text-align: center; color: var(--muted); }
+    .empty-icon { margin-bottom: 12px; font-size: 30px; }
+    .empty strong { display: block; margin-bottom: 5px; color: #e8e3f7; font-size: 14px; }
+    .side { display: grid; gap: 18px; }
+    .form-wrap { padding: 19px 20px 21px; }
+    .field { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 7px; color: #d4cee7; font-size: 11px; font-weight: 750; }
+    input { width: 100%; height: 44px; padding: 0 13px; outline: none; border: 1px solid rgba(190,174,255,.17); border-radius: 11px; background: rgba(8, 7, 16, .6); color: var(--text); font-size: 13px; transition: border-color .2s, box-shadow .2s; }
+    input::placeholder { color: #69637e; }
+    input:focus { border-color: #9c79f4; box-shadow: 0 0 0 3px rgba(156,121,244,.14); }
+    .add-btn { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; min-height: 45px; border: 0; border-radius: 11px; background: linear-gradient(100deg, #804be0, #5147c8); box-shadow: 0 8px 20px rgba(91, 62, 194, .25); cursor: pointer; font-size: 13px; font-weight: 850; transition: filter .2s, transform .2s; }
+    .add-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .hint { margin: 11px 1px 0; color: #86809f; font-size: 10px; line-height: 1.5; }
+    .history-list { padding: 3px 18px 11px; }
+    .history-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid rgba(190,174,255,.08); }
+    .history-item:last-child { border-bottom: 0; }
+    .history-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
+    .history-time { margin-top: 4px; color: #827c99; font-size: 10px; }
+    .history-points { color: #c0a8ff; font-size: 13px; font-weight: 850; white-space: nowrap; }
+    .history-empty { padding: 20px 2px; color: var(--muted); font-size: 12px; text-align: center; }
+    .footer-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 18px 2px 0; color: #77718d; font-size: 10px; }
+    .reset-btn { padding: 7px 10px; border: 1px solid rgba(255,107,133,.2); border-radius: 9px; background: transparent; color: #c17b8a; cursor: pointer; font-size: 10px; }
+    .reset-btn:hover { background: rgba(255,107,133,.08); color: #ff8da2; }
+    .toast { position: fixed; z-index: 5; left: 50%; bottom: 24px; max-width: calc(100% - 32px); padding: 11px 16px; border: 1px solid rgba(190,174,255,.22); border-radius: 12px; background: #201a38; box-shadow: 0 12px 40px rgba(0,0,0,.4); color: #eee8ff; font-size: 12px; opacity: 0; pointer-events: none; transform: translate(-50%, 12px); transition: .22s ease; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 26px, 580px); padding-top: 23px; }
+      .topbar { margin-bottom: 26px; }
+      .hero { margin: 20px 0 24px; }
+      .layout { grid-template-columns: 1fr; }
+      .side { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 20px); }
+      .brand { font-size: 11px; letter-spacing: .12em; }
+      .brand-mark { width: 34px; height: 34px; }
+      .local-badge { padding: 7px 9px; font-size: 10px; }
+      .stats { gap: 9px; }
+      .stat-card { gap: 10px; padding: 13px 12px; }
+      .stat-icon { width: 36px; height: 36px; font-size: 17px; }
+      .stat-value { font-size: 20px; }
+      .player-row { grid-template-columns: 37px minmax(0, 1fr) auto 29px; gap: 8px; padding: 9px 8px; }
+      .score { font-size: 17px; }
+      .panel-head { padding: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">🏆</div><span>CLIP CHAMPIONS</span></div>
+      <div class="local-badge">이 기기에 저장 중</div>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div class="eyebrow">The ultimate clip leaderboard</div>
+      <h1 id="page-title">CLIP <span>CHAMPIONS</span></h1>
+      <p class="subtitle">오늘의 클립 챔피언은 누구인가요?</p>
+    </section>
+
+    <section class="stats" aria-label="랭킹 통계">
+      <div class="stat-card"><div class="stat-icon" aria-hidden="true">✂️</div><div><div class="stat-label">전체 클립</div><div class="stat-value" id="total-clips">0 <small>CLIPS</small></div></div></div>
+      <div class="stat-card"><div class="stat-icon" aria-hidden="true">👥</div><div><div class="stat-label">참가자</div><div class="stat-value" id="total-players">0 <small>PLAYERS</small></div></div></div>
+    </section>
+
+    <div class="layout">
+      <section class="panel" aria-labelledby="ranking-title">
+        <div class="panel-head"><h2 class="panel-title" id="ranking-title">🏅 챔피언 랭킹</h2><span class="panel-kicker">점수순 자동 정렬</span></div>
+        <div class="board-list" id="ranking-list" aria-live="polite"></div>
+      </section>
+
+      <aside class="side">
+        <section class="panel" aria-labelledby="add-title">
+          <div class="panel-head"><h2 class="panel-title" id="add-title">✨ 점수 입력</h2><span class="panel-kicker">새 기록 추가</span></div>
+          <form class="form-wrap" id="score-form">
+            <div class="field"><label for="nickname">닉네임</label><input id="nickname" name="nickname" type="text" maxlength="24" placeholder="예: 클립마스터" autocomplete="off" required></div>
+            <div class="field"><label for="clips">획득한 클립 개수</label><input id="clips" name="clips" type="number" min="1" max="1000000" step="1" placeholder="클립 수를 입력하세요" required></div>
+            <button class="add-btn" type="submit"><span aria-hidden="true">＋</span> 점수 등록하기</button>
+            <p class="hint">같은 닉네임으로 등록하면 기존 점수에 자동으로 누적됩니다.</p>
+          </form>
+        </section>
+
+        <section class="panel" aria-labelledby="history-title">
+          <div class="panel-head"><h2 class="panel-title" id="history-title">🕒 최근 입력 내역</h2><span class="panel-kicker">최근 8건</span></div>
+          <div class="history-list" id="history-list" aria-live="polite"></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="footer-row"><span>기록은 이 브라우저의 localStorage에 저장됩니다.</span><button class="reset-btn" id="reset-btn" type="button">전체 기록 초기화</button></div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+      const STORAGE_KEY = 'clip-champions-data-v1';
+      const $ = (selector) => document.querySelector(selector);
+      const rankingList = $('#ranking-list');
+      const historyList = $('#history-list');
+      const toastElement = $('#toast');
+      let toastTimer;
+
+      function loadData() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          return {
+            players: Array.isArray(parsed.players) ? parsed.players.filter(p => p && typeof p.name === 'string' && Number.isFinite(p.score)) : [],
+            history: Array.isArray(parsed.history) ? parsed.history.filter(item => item && typeof item.name === 'string' && Number.isFinite(item.clips)) : []
+          };
+        } catch (_) {
+          return { players: [], history: [] };
+        }
+      }
+      let data = loadData();
+
+      function saveData() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          return true;
+        } catch (_) {
+          showToast('저장 공간이 부족해요. 브라우저 저장 공간을 확인해 주세요.');
+          return false;
+        }
+      }
+      function showToast(message) {
+        toastElement.textContent = message;
+        toastElement.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastElement.classList.remove('show'), 2600);
+      }
+      function formatNumber(value) { return new Intl.NumberFormat('ko-KR').format(value); }
+      function escapeText(value) {
+        return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+      }
+      function formatTime(value) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
+      }
+      function render() {
+        const sorted = [...data.players].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'));
+        const total = data.players.reduce((sum, player) => sum + player.score, 0);
+        $('#total-clips').innerHTML = `${formatNumber(total)} <small>CLIPS</small>`;
+        $('#total-players').innerHTML = `${formatNumber(data.players.length)} <small>PLAYERS</small>`;
+
+        if (!sorted.length) {
+          rankingList.innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><strong>아직 등록된 참가자가 없어요</strong>첫 점수를 입력해 랭킹을 시작해 보세요!</div>';
+        } else {
+          rankingList.innerHTML = sorted.map((player, index) => {
+            const rank = index + 1;
+            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+            const place = medal ? `<span class="medal" aria-label="${rank}위">${medal}</span>` : `${rank}위`;
+            return `<div class="player-row rank-${rank <= 3 ? rank : 'other'}">
+              <div class="place">${place}</div>
+              <div><div class="player-name">${escapeText(player.name)}</div><div class="player-sub">${rank === 1 ? '현재 선두' : 'CLIP PLAYER'}</div></div>
+              <div class="score">${formatNumber(player.score)}<span>CLIPS</span></div>
+              <button class="delete-btn" type="button" data-delete="${escapeText(player.name)}" aria-label="${escapeText(player.name)} 기록 삭제" title="참가자 기록 삭제">✕</button>
+            </div>`;
+          }).join('');
+        }
+
+        const recent = [...data.history].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 8);
+        historyList.innerHTML = recent.length ? recent.map(item => `<div class="history-item"><div><div class="history-name">${escapeText(item.name)}</div><div class="history-time">${escapeText(formatTime(item.at))}</div></div><div class="history-points">+${formatNumber(item.clips)} 클립</div></div>`).join('') : '<div class="history-empty">점수 입력 내역이 여기에 표시됩니다.</div>';
+      }
+
+      $('#score-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = $('#nickname').value.trim();
+        const clips = Number($('#clips').value);
+        if (!name) { $('#nickname').focus(); return; }
+        if (!Number.isSafeInteger(clips) || clips < 1 || clips > 1000000) {
+          showToast('클립 개수는 1부터 1,000,000까지의 정수로 입력해 주세요.');
+          $('#clips').focus();
+          return;
+        }
+        const existing = data.players.find(player => player.name.toLocaleLowerCase('ko-KR') === name.toLocaleLowerCase('ko-KR'));
+        if (existing) {
+          if (!Number.isSafeInteger(existing.score + clips)) { showToast('누적 점수가 너무 큽니다.'); return; }
+          existing.score += clips;
+        } else {
+          data.players.push({ name, score: clips });
+        }
+        data.history.push({ name, clips, at: new Date().toISOString() });
+        data.history = data.history.slice(-100);
+        saveData();
+        render();
+        event.currentTarget.reset();
+        $('#nickname').focus();
+        showToast(existing ? `${name}님의 점수에 ${formatNumber(clips)} 클립을 누적했어요.` : `${name}님이 랭킹에 추가됐어요!`);
+      });
+
+      rankingList.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-delete]');
+        if (!button) return;
+        const name = button.dataset.delete;
+        if (!window.confirm(`“${name}”님의 랭킹 기록을 삭제할까요?`)) return;
+        data.players = data.players.filter(player => player.name !== name);
+        saveData();
+        render();
+        showToast(`${name}님의 참가자 기록을 삭제했어요.`);
+      });
+
+      $('#reset-btn').addEventListener('click', () => {
+        if (!data.players.length && !data.history.length) { showToast('초기화할 기록이 없습니다.'); return; }
+        if (!window.confirm('모든 참가자 점수와 입력 내역을 삭제할까요? 이 작업은 되돌릴 수 없습니다.')) return;
+        data = { players: [], history: [] };
+        saveData();
+        render();
+        showToast('모든 기록을 초기화했어요.');
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
